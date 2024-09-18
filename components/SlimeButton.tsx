@@ -7,7 +7,7 @@ interface SlimeButtonProps {
   text: string;
   colorType: 'Rouge'|'Beige'|'Marron';
   onPress: () => void;
-}
+} 
 
 const backgroundImages = {
   Rouge: require('@/assets/images/BoutonRouge.png'),
@@ -47,10 +47,11 @@ const SlimeButton: React.FC<SlimeButtonProps> = ({ text, colorType, onPress }) =
 
 const styles = StyleSheet.create({
   button: {
-    width: '100%',
-    height: '100%',
+    width: 250,
+    height: 100,
     borderRadius: 20,
     overflow: 'hidden',
+    marginBottom: 50
   },
   backgroundImage: {
     flex: 1,
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
   },
   textWithShadow: {
     fontFamily: 'BlankPlace',  // Utilisation de la police personnalisée
-    fontSize: 18,
+    fontSize: 28,
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',

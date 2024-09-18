@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ImageBackground, PermissionsAndroid, Platform } from 'react-native';
+import SlimeButton from '@/components/SlimeButton';
 
 export default function HomeScreen() {
   const [locationPermission, setLocationPermission] = useState(true); // Par défaut, on suppose que la permission est accordée
@@ -42,32 +43,22 @@ export default function HomeScreen() {
           source={require('@/assets/images/logo.png')}
           style={styles.logo}
         />
-
-        {/* Bouton Créer un salon */}
-        <TouchableOpacity style={styles.imageButton}>
-          <Image
-            source={require('@/assets/images/create-room.png')}
-            style={styles.buttonImage}
-          />
-        </TouchableOpacity>
-
-        {/* Bouton Rejoindre un salon */}
-        <TouchableOpacity style={styles.imageButton}>
-          <Image
-            source={require('@/assets/images/join-room.png')}
-            style={styles.buttonImage}
-          />
-        </TouchableOpacity>
-
-        {/* Bouton Profil */}
-        <TouchableOpacity style={styles.imageButton}>
-          <Image
-            source={require('@/assets/images/profile.png')}
-            style={styles.buttonImage}
-          />
-        </TouchableOpacity>
+      <SlimeButton 
+        colorType="Beige"
+        text={"Créer\n un salon"}
+        onPress={()=> alert('Créer un Salon')}
+      />
+            <SlimeButton 
+        colorType="Beige"
+        text={"Rejoindre \nun salon"}
+        onPress={()=> alert('Rejoindre un Salon')}
+      />
+            <SlimeButton 
+        colorType="Marron"
+        text={"Profil"}
+        onPress={()=> alert('Ouverture du Profil')}
+      />
       </View>
-
     </ImageBackground>
   );
 }
@@ -98,4 +89,3 @@ const styles = StyleSheet.create({
   },
 
 });
-git
