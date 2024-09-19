@@ -1,35 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import MapView, { Marker, Circle } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { Magnetometer } from 'expo-sensors'; // Pour obtenir la direction de l'appareil
+import { Magnetometer } from 'expo-sensors';
 
-/* MapView : Affichage carte sur Google Maps / Marker : Afficher Marker */
-/* expo-location : API d'Expo pour accéder aux services de loc sur téléphone */
+// Fonction pour calculer la distance entre deux points avec la formule de Haversine
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const R = 6371; // Rayon de la Terre en km
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c; // Distance en km
+  return distance;
+};
 
-/* Création d'un type de données location */
-interface LocationData {
-  coords: {
-    latitude: number;
-    longitude: number;
-  };
-}
-/* Création composant fonctionnel MapScreen */
+// Emplacements clés simulés à Paris
+const parisLocations = [
+  { id: 1, name: "Eiffel Tower", coords: { latitude: 48.8584, longitude: 2.2945 } },
+  { id: 2, name: "Louvre Museum", coords: { latitude: 48.8606, longitude: 2.3376 } },
+  { id: 3, name: "Notre Dame", coords: { latitude: 48.852968, longitude: 2.349902 } },
+  { id: 4, name: "Arc de Triomphe", coords: { latitude: 48.8738, longitude: 2.295 } },
+  { id: 5, name: "Montmartre", coords: { latitude: 48.8867, longitude: 2.3431 } },
+];
+
 const MapScreen: React.FC = () => {
-  const [location, setLocation] = useState<LocationData | null>(null);
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [heading, setHeading] = useState<number>(0); // Orientation de l'appareil
+  const [nearestLocation, setNearestLocation] = useState<{ id: number, name: string, coords: { latitude: number, longitude: number } } | null>(null);
+  const [distance, setDistance] = useState<number | null>(null); // Distance au point le plus proche
 
-  /* Fonction asynchrone exécutée une seule fois */ 
+  // Fonction pour déterminer le point le plus proche
+  const findNearestLocation = () => {
+    if (!location) return;
+
+    let closest = null;
+    let minDistance = Infinity;
+
+    parisLocations.forEach(point => {
+      const dist = calculateDistance(
+        location.coords.latitude,
+        location.coords.longitude,
+        point.coords.latitude,
+        point.coords.longitude
+      );
+      if (dist < minDistance) {
+        minDistance = dist;
+        closest = point;
+      }
+    });
+
+    setNearestLocation(closest);
+    setDistance(minDistance);
+  };
+
   useEffect(() => {
     const fetchLocation = async () => {
-      /* Demande de permission pour localisation */
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg('Permission to access location was denied');
         return;
       }
-      /* Récupération de position */
       let currentLocation = await Location.getCurrentPositionAsync({});
       setLocation(currentLocation);
     };
@@ -37,21 +73,31 @@ const MapScreen: React.FC = () => {
     fetchLocation();
   }, []);
 
-  /* Obtenir la direction de l'appareil avec la boussole */
+  // Récupérer la direction de l'appareil avec la boussole
   useEffect(() => {
     const subscription = Magnetometer.addListener((data) => {
-      let angle = Math.atan2(data.y, data.x) * (180 / Math.PI); // Calcul angle entre axe x et le vecteur (x,y)
+      let angle = Math.atan2(data.y, data.x) * (180 / Math.PI);
       if (angle < 0) {
         angle += 360;
       }
-      setHeading(angle); // Mettre à jour l'angle en degrés
+      setHeading(angle);
     });
 
-    // Nettoyer l'abonnement lorsque le composant est démonté
     return () => subscription.remove();
   }, []);
 
-  /* Permission denied */
+  // Vérifier la position toutes les X secondes et mettre à jour le point le plus proche
+  useEffect(() => {
+    const interval = setInterval(() => {
+      Location.getCurrentPositionAsync({}).then(currentLocation => {
+        setLocation(currentLocation);
+        findNearestLocation(); // Mettre à jour le point le plus proche
+      });
+    }, 5000); // 5 secondes d'intervalle
+
+    return () => clearInterval(interval);
+  }, [location]);
+
   if (errorMsg) {
     return (
       <View style={styles.container}>
@@ -60,7 +106,6 @@ const MapScreen: React.FC = () => {
     );
   }
 
-  /* Attente de récupération de la localisation */
   if (!location) {
     return (
       <View style={styles.container}>
@@ -69,15 +114,11 @@ const MapScreen: React.FC = () => {
     );
   }
 
-  /*console.log(location.coords.latitude);
-  console.log(location.coords.longitude);*/
-
-  /* Affichage de la carte */
   return (
     <View style={styles.container}>
       <MapView
         style={styles.map}
-        showsUserLocation={true} // Afficher le point bleu natif de la carte
+        showsUserLocation={true}
         initialRegion={{
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
@@ -91,15 +132,37 @@ const MapScreen: React.FC = () => {
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
           }}
-          rotation={heading} // faire pivoter le marker en fonction de l'orientation
+          rotation={heading}
           title="You are here"
         >
-          {/* Style du marker */}
           <View style={styles.marker}>
-              <View style={[styles.marker, { transform: [{ rotate: `${heading}deg` }] }]} />
+            <View style={[styles.marker, { transform: [{ rotate: `${heading}deg` }] }]} />
           </View>
         </Marker>
+
+        {/* Marquer tous les points de Paris */}
+        {parisLocations.map((point) => (
+          <Marker
+            key={point.id}
+            coordinate={point.coords}
+            title={point.name}
+          />
+        ))}
+
+        {/* Mettre en évidence le point le plus proche */}
+        {nearestLocation && (
+          <Marker
+            coordinate={nearestLocation.coords}
+            pinColor="green" // Couleur différente pour le point le plus proche
+            title={`Closest: ${nearestLocation.name} (${distance?.toFixed(2)} km away)`}
+          />
+        )}
       </MapView>
+
+      {/* Affichage de la distance */}
+      {distance && (
+        <Text style={styles.distanceText}>Nearest point: {nearestLocation?.name} - {distance.toFixed(2)} km away</Text>
+      )}
     </View>
   );
 };
@@ -120,12 +183,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  /*arrow: {
-    width: 10,
-    height: 10,
-    backgroundColor: 'green', // Point bleu
+  distanceText: {
+    position: 'absolute',
+    bottom: 50,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    color: 'white',
+    padding: 10,
     borderRadius: 5,
-  },*/
+  },
 });
 
 export default MapScreen;
