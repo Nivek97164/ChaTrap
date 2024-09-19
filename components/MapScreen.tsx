@@ -21,11 +21,11 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 
 // Emplacements clés simulés à Paris
 const parisLocations = [
-  { id: 1, name: "Eiffel Tower", coords: { latitude: 48.8584, longitude: 2.2945 } },
-  { id: 2, name: "Louvre Museum", coords: { latitude: 48.8606, longitude: 2.3376 } },
-  { id: 3, name: "Notre Dame", coords: { latitude: 48.852968, longitude: 2.349902 } },
-  { id: 4, name: "Arc de Triomphe", coords: { latitude: 48.8738, longitude: 2.295 } },
-  { id: 5, name: "Montmartre", coords: { latitude: 48.8867, longitude: 2.3431 } },
+  { id: 1, name: "Mickey", coords: { latitude: 48.8584, longitude: 2.2945 } },
+  { id: 2, name: "Rémi", coords: { latitude: 48.8606, longitude: 2.3376 } },
+  { id: 3, name: "Minnie", coords: { latitude: 48.852968, longitude: 2.349902 } },
+  { id: 4, name: "Joseph", coords: { latitude: 48.8738, longitude: 2.295 } },
+  { id: 5, name: "Stewart", coords: { latitude: 48.8867, longitude: 2.3431 } },
 ];
 
 const MapScreen: React.FC = () => {
@@ -154,14 +154,14 @@ const MapScreen: React.FC = () => {
           <Marker
             coordinate={nearestLocation.coords}
             pinColor="green" // Couleur différente pour le point le plus proche
-            title={`Closest: ${nearestLocation.name} (${distance?.toFixed(2)} km away)`}
+            title={`Souris la plus proche : ${nearestLocation.name} (${(distance?.toFixed(2))}m)`}
           />
         )}
       </MapView>
 
       {/* Affichage de la distance */}
       {distance && (
-        <Text style={styles.distanceText}>Nearest point: {nearestLocation?.name} - {distance.toFixed(2)} km away</Text>
+        <Text style={styles.distanceText}>Souris la plus proche : {nearestLocation?.name} - {(distance.toFixed(2)*1000)}m</Text>
       )}
     </View>
   );

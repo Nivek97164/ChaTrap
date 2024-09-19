@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Button, Image } from 'react-native';
 import supabase from '../config/supabaseClient';
+import SlimeButton from '@/components/SlimeButton';
 
 const HomeScreen = () => {
   const [pseudo, setPseudo] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   // Fonction pour insérer un utilisateur
@@ -13,7 +13,6 @@ const HomeScreen = () => {
       const { data, error } = await supabase.from('users').insert([
         {
           pseudo: pseudo,
-          email: email,
           password: password, // Assure-toi de ne jamais stocker les mots de passe en clair en production
         },
       ]);
@@ -30,32 +29,39 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text>Bienvenue sur l'écran d'accueil</Text>
+                      <Image
+                    source={require('@/assets/images/background.jpg')}
+                    style={styles.background}
+                />
+                <Image
+                    source={require('@/assets/images/logo.png')}
+                    style={styles.logo}
+                />
 
       <TextInput
         style={styles.input}
-        placeholder="Pseudo"
+        placeholder="Robert"
         value={pseudo}
         onChangeText={setPseudo}
       />
 
       <TextInput
         style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Mot de passe"
+        placeholder="azerty95"
         value={password}
         onChangeText={setPassword}
         secureTextEntry={true}
       />
 
-      <Button title="Insérer un utilisateur" onPress={insertUser} />
+      <SlimeButton
+      colorType="Marron"
+      onPress={insertUser}
+      text={"Créer\n le profil"}
+      >
+
+      </SlimeButton>
+
+
     </View>
   );
 };
@@ -65,16 +71,35 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
   },
   input: {
-    width: '100%',
+    width: '60%',
     padding: 8,
     marginVertical: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
+    borderColor: 'black',
+    borderRadius: 50,
+    backgroundColor:'rgba(0, 0, 0, 0.3)',
+    color: 'white',
   },
+  logo: {
+    display: 'flex',
+    width: 350,
+    height: 200,
+    marginLeft: 'auto',
+    marginRight: 'auto',    
+    marginTop: 50,
+    marginBottom: 50,
+  },
+
+background: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    top: 0,
+    left: 0,
+    zIndex: -100
+},
 });
 
 export default HomeScreen;
