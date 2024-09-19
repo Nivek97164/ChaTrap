@@ -4,7 +4,6 @@ import supabase from '../config/supabaseClient';
 
 const HomeScreen = () => {
   const [pseudo, setPseudo] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   // Fonction pour insérer un utilisateur
@@ -13,7 +12,6 @@ const HomeScreen = () => {
       const { data, error } = await supabase.from('users').insert([
         {
           pseudo: pseudo,
-          email: email,
           password: password, // Assure-toi de ne jamais stocker les mots de passe en clair en production
         },
       ]);
@@ -37,14 +35,6 @@ const HomeScreen = () => {
         placeholder="Pseudo"
         value={pseudo}
         onChangeText={setPseudo}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
       />
 
       <TextInput
